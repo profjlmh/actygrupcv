@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividades y Grupos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+        
+        /* PANEL DE PRUEBAS */
+        .test-panel { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .test-panel select, .test-panel input { padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
+        .test-panel button { padding: 6px 12px; background: #00b894; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .test-panel button:hover { background: #00a884; }
+
+        .header-info { background: #eee; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; font-size: 14px; }
+        th { background-color: #999; color: black; font-weight: bold; text-align: center; }
+        td { text-align: center; }
+        td.align-left { text-align: left; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .btn-link { display: inline-block; padding: 5px 10px; background-color: #f1f1f1; border-radius: 4px; color: #007bff; border: 1px solid #ddd; cursor: pointer; text-decoration: none;}
+        .btn-link:hover { background-color: #e2e2e2; }
+        .status-entregada { color: green; font-weight: bold; }
+        .icon { margin-right: 5px; }
+
+        /* ESTILOS DEL MODAL */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 10% auto; padding: 25px; border: 1px solid #888; width: 380px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .close-btn { color: #aaa; float: right; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
+        .close-btn:hover { color: black; }
+        .btn-correo { background-color: #d93025; color: white; border: none; }
+        .btn-correo:hover { background-color: #c5221f; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="test-panel">
+        <b>🛠️ Panel de Pruebas LTI:</b>
+        <label for="roleSelector">Rol:</label>
+        <select id="roleSelector" onchange="toggleUserIdInput()">
+            <option value="teacher" <%= role === 'teacher' ? 'selected' : '' %>>Maestro</option>
+            <option value="student" <%= role === 'student' ? 'selected' : '' %>>Alumno</option>
+        </select>
+        
+        <% if (role === 'teacher') { %>
+            <input type="text" id="userIdInput" placeholder="ID del Alumno (ej. 1067)" value="" style="display: none;">
+        <% } else { %>
+            <input type="text" id="userIdInput" placeholder="ID del Alumno (ej. 1067)" value="<%= (user_id !== 'NO_APLICA') ? user_id : '' %>" style="display: inline-block;">
+        <% } %>
+        
+        <button onclick="cambiarVistaPrueba()">🔄 Actualizar Vista (Curso 317)</button>
+    </div>
+
+    <div class="header-info">
+        <b>Rol actual:</b> <%= role === 'teacher' ? 'Maestro' : 'Alumno' %> | 
+        <% if (role !== 'teacher') { %>
+            <b>Canvas ID:</b> <%= user_id %> | 
+        <% } %>
+        <b>Nombre:</b> <%= userNameToDisplay %>
+    </div>
+
+    <table>
+        <thead>
+            <% if (role === 'teacher') { %>
+                <tr>
+                    <th>Tarea</th>
+                    <th>Módulo</th>
+                    <th>📅 Disponible desde</th>
+                    <th>⏳ Entrega</th>
+                    <th>Modalidad</th>
+                    <th>Entregas</th>
+                    <th>Revisadas</th>
+                    <th>Revisión</th>
+                </tr>
+            <% } else { %>
+                <tr>
+                    <th>Tarea</th>
+                    <th>Módulo</th>
+                    <th>Disponible desde</th>
+                    <th>Entrega</th>
+                    <th>Modalidad</th>
+                    <th>Espacio del equipo (si aplica)</th>
+                    <th>Estatus</th>
+                </tr>
+            <% } %>
+        </thead>
+        <tbody>
+            <% tableData.forEach(row => { %>
+                <tr>
+                    <td class="align-left"><a href="<%= row.url %>" target="_blank"><%= row.name %></a></td>
+                    <td><%= row.module_name %></td>
+                    <td><%= row.available_from %></td>
+                    <td><%= row.due_date %></td>
+                    
+                    <td>
+                        <span class="icon"><%= row.is_group ? '👥' : '👤' %></span>
+                        <%= row.modalidad %>
+                    </td>
+
+                    <% if (role === 'teacher') { %>
+                        <td><%= row.entregas %></td>
+                        <td><%= row.revisadas %></td>
+                        <td>
+                            <a href="<%= row.speedgrader_url %>" target="_blank" class="btn-link">📝 Calificar</a>
+                        </td>
+                    <% } else { %>
+                        <td>
+                            <% if (row.is_group) { %>
+                                <% if (row.group_id) { %>
+                                    <button class="btn-link" onclick="abrirModalEquipo(this)" data-name="<%= row.group_name %>" data-id="<%= row.group_id %>" data-members="<%= encodeURIComponent(JSON.stringify(row.group_members)) %>">Ver Equipo</button>
+                                <% } else { %>
+                                    <span style="color: #888;">Aún no tienes equipo</span>
+                                <% } %>
+                            <% } else { %>
+                                Individual
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (row.status === 'Entregada' || row.status === 'Calificada') { %>
+                                <span class="status-entregada">✔ <%= row.status %></span>
+                            <% } else { %>
+                                <%= row.status %>
+                            <% } %>
+                        </td>
+                    <% } %>
+                </tr>
+            <% }) %>
+            
+            <% if (tableData.length === 0) { %>
+                <tr>
+                    <td colspan="<%= role === 'teacher' ? '8' : '7' %>">No hay actividades disponibles.</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div id="modalEquipo" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <h3 id="modalGroupName" style="margin-top: 0; color: #333;">Tu Equipo</h3>
+            
+            <div style="text-align: left; margin: 15px 0;">
+                <strong style="color: #555;">Miembros:</strong>
+                <ul id="modalMembersList" style="padding-left: 20px; font-size: 14px; margin-top: 8px; color: #333;">
+                </ul>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 25px;">
+                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; margin-right: 5px; text-align: center;">🌐 Ir al espacio</a>
+                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; margin-left: 5px; text-align: center;">✉️ Gmail a Equipo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGICA DEL PANEL DE PRUEBAS ---
+        function toggleUserIdInput() {
+            const role = document.getElementById('roleSelector').value;
+            document.getElementById('userIdInput').style.display = role === 'teacher' ? 'none' : 'inline-block';
+        }
+
+        function cambiarVistaPrueba() {
+            const role = document.getElementById('roleSelector').value;
+            const userId = document.getElementById('userIdInput').value;
+            
+            let nuevaUrl = `/?course_id=317&role=${role}`;
+            
+            if (role === 'student' && userId.trim() !== '') {
+                nuevaUrl += `&user_id=${userId.trim()}`;
+            }
+            
+            window.location.href = nuevaUrl;
+        }
+
+        // --- LOGICA DEL MODAL Y CORREO ---
+        function abrirModalEquipo(btn) {
+            const groupName = btn.getAttribute('data-name');
+            const groupId = btn.getAttribute('data-id');
+            const members = JSON.parse(decodeURIComponent(btn.getAttribute('data-members')));
+
+            document.getElementById('modalGroupName').innerText = groupName;
+            
+            const list = document.getElementById('modalMembersList');
+            list.innerHTML = ''; 
+            
+            let emails = [];
+
+            members.forEach(m => {
+                let li = document.createElement('li');
+                li.innerText = m.name;
+                list.appendChild(li);
+                
+                if (m.email && m.email.trim() !== '') {
+                    emails.push(m.email);
+                }
+            });
+
+            document.getElementById('btnIrGrupo').href = '<%= platform_url %>/groups/' + groupId;
+
+            const btnCorreo = document.getElementById('btnEnviarCorreo');
+            if (emails.length > 0) {
+                btnCorreo.style.display = 'inline-block';
+                btnCorreo.onclick = function(e) {
+                    e.preventDefault();
+                    const correos = emails.join(',');
+                    const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${correos}`;
+                    window.open(gmailComposeUrl, 'MiniGmail', 'width=600,height=600,left=200,top=100');
+                };
+            } else {
+                btnCorreo.style.display = 'none';
+            }
+
+            document.getElementById('modalEquipo').style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalEquipo').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            let modal = document.getElementById('modalEquipo');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
