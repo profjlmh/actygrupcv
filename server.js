@@ -63,7 +63,6 @@ web.get('/', async (req, res) => {
   let userNameToDisplay = 'Desconocido';
   let submissionsMap = {};
   let userGroupsMap = {};
-  
   let teacherStats = {}; 
   let totalStudentsCount = 0;
 
@@ -81,24 +80,57 @@ web.get('/', async (req, res) => {
           userNameToDisplay = role === 'teacher' ? 'Vista de Maestro' : 'Falta ID en URL';
       }
 
-      // 2. OBTENER TAREAS DEL CURSO (Filtro anti-exámenes)
-      const assigRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/assignments?per_page=100`, {
-          headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
-      });
-      const assignments = assigRes.data.filter(a => !/examen|parcial/i.test(a.name));
-
-      // 3. OBTENER MÓDULOS
+      // 1. OBTENER MÓDULOS (Filtramos "plantilla" o "template")
       const modRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/modules?include[]=items&per_page=100`, {
           headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
       });
       const moduleMap = {}; 
+      const excludedModules = new Set();
+
       modRes.data.forEach(mod => {
+          if (/plantilla|template/i.test(mod.name)) {
+              excludedModules.add(mod.id);
+              return; // Ignorar plantillas
+          }
           if (mod.items) {
               mod.items.forEach(item => {
                   if (item.content_id) moduleMap[item.content_id] = mod.name;
+                  // Guardar también por URL de foros si el content_id es distinto
+                  if (item.type === 'Discussion' && item.page_url) {
+                      moduleMap[item.page_url] = mod.name; 
+                  }
               });
           }
       });
+
+      // 2. OBTENER TAREAS (Assignments) - Publicadas y sin exámenes
+      const assigRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/assignments?per_page=100`, {
+          headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
+      });
+      let mixedActivities = assigRes.data.filter(a => {
+          const isExamen = /examen|parcial/i.test(a.name);
+          const isPublished = a.published !== false;
+          return !isExamen && isPublished;
+      }).map(a => ({ ...a, activity_type: 'assignment' }));
+
+      // 3. OBTENER FOROS DE DISCUSIÓN (Que no sean tareas para no duplicar)
+      try {
+          const forumRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/discussion_topics?per_page=100`, {
+              headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
+          });
+          const nonGradedForums = forumRes.data.filter(f => !f.assignment_id && f.published !== false).map(f => ({
+              ...f,
+              id: f.id,
+              name: `🗣️ ${f.title}`,
+              html_url: f.html_url,
+              unlock_at: f.delayed_post_at, // Foros usan esta prop
+              due_at: null,
+              lock_at: f.lock_at,
+              group_category_id: f.group_category_id,
+              activity_type: 'forum'
+          }));
+          mixedActivities = mixedActivities.concat(nonGradedForums);
+      } catch (e) { console.error("Aviso: No se pudieron cargar los foros adicionales"); }
 
       // 4. LÓGICA DIVIDIDA POR ROL
       if (role === 'teacher') {
@@ -124,7 +156,7 @@ web.get('/', async (req, res) => {
                   }
               });
           } catch (e) {
-              console.error("❌ Error API Maestro (Alumnos/Entregas):", e.message);
+              console.error("❌ Error API Maestro:", e.message);
           }
 
       } else if (validUserId) {
@@ -142,14 +174,12 @@ web.get('/', async (req, res) => {
               
               await Promise.all(courseGroupsRes.data.map(async (g) => {
                   try {
-                      // AQUÍ PEDIMOS LOS CORREOS (include[]=email)
                       const membersRes = await axios.get(`${PLATFORM_URL}/api/v1/groups/${g.id}/users?include[]=email&per_page=100`, {
                           headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
                       });
                       
                       const isMember = membersRes.data.some(u => u.id == validUserId);
                       if (isMember && g.group_category_id) {
-                          // Extraemos nombres y correos
                           const memberDetails = membersRes.data.map(m => ({
                               name: m.name || m.short_name,
                               email: m.email || m.login_id || ''
@@ -167,37 +197,59 @@ web.get('/', async (req, res) => {
       }
 
       // 5. ARMAR TABLA FINAL
-      const tableData = assignments.map(a => {
+      let tableData = mixedActivities.map(a => {
           const formatDate = (dateStr) => {
               if (!dateStr) return "-";
               const d = new Date(dateStr);
               return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute:'2-digit' });
           };
 
+          const rawDateStr = (dateStr) => dateStr ? new Date(dateStr).toISOString() : '9999-12-31T23:59:59Z';
+
           const isGroup = a.group_category_id !== null;
           
+          // Intentar obtener el módulo de ID o de la URL para los foros
+          let moduleName = moduleMap[a.id] || "Sin módulo";
+          if (moduleName === "Sin módulo" && a.activity_type === 'forum') {
+               const urlParts = a.html_url.split('/');
+               const topicUrl = urlParts[urlParts.length -1];
+               if(moduleMap[topicUrl]) moduleName = moduleMap[topicUrl];
+          }
+
           let row = {
               id: a.id,
               name: a.name,
               url: a.html_url,
-              module_name: moduleMap[a.id] || "Sin módulo",
+              module_name: moduleName,
+              // Strings legibles
               available_from: formatDate(a.unlock_at),
               due_date: formatDate(a.due_at),
+              lock_date: formatDate(a.lock_at),
+              // Datos crudos para JS sorting
+              raw_available: rawDateStr(a.unlock_at),
+              raw_due: rawDateStr(a.due_at),
+              raw_lock: rawDateStr(a.lock_at),
+              
               is_group: isGroup,
-              modalidad: isGroup ? "Equipos" : "Individual"
+              activity_type: a.activity_type
           };
 
           if (role === 'teacher') {
               const stats = teacherStats[a.id] || { entregadas: 0, revisadas: 0 };
-              row.entregas = `${stats.entregadas}/${totalStudentsCount}`;
-              row.revisadas = stats.revisadas;
-              row.speedgrader_url = `${PLATFORM_URL}/courses/${course_id}/gradebook/speed_grader?assignment_id=${a.id}`;
+              row.entregas = a.activity_type === 'forum' ? '-' : `${stats.entregadas}/${totalStudentsCount}`;
+              row.revisadas = a.activity_type === 'forum' ? '-' : stats.revisadas;
+              row.speedgrader_url = a.activity_type === 'forum' ? a.html_url : `${PLATFORM_URL}/courses/${course_id}/gradebook/speed_grader?assignment_id=${a.id}`;
           } else {
-              let estatus = "No entregada";
-              if (submissionsMap[a.id]) {
+              let estatus = "🔴 No entregada";
+              if (a.activity_type === 'forum') {
+                  estatus = "⚪ Foro (Participación)";
+              } else if (submissionsMap[a.id]) {
                   const sub = submissionsMap[a.id];
-                  if (sub.graded_at || sub.workflow_state === 'graded') estatus = "Calificada";
-                  else if (sub.submitted_at || sub.workflow_state === 'submitted') estatus = "Entregada";
+                  if (sub.workflow_state === 'graded' || sub.graded_at) {
+                      estatus = "🟢 Calificada";
+                  } else if (sub.workflow_state === 'submitted' || sub.submitted_at) {
+                      estatus = sub.late ? "🟡 Entrega con atraso" : "🔵 Entregada";
+                  }
               }
               
               let myGroupName = "Aún no tienes equipo";
@@ -218,6 +270,9 @@ web.get('/', async (req, res) => {
 
           return row;
       });
+
+      // Filtrar tareas huerfanas de modulos que fueron excluidos (plantillas)
+      tableData = tableData.filter(row => row.module_name !== 'Sin módulo' || !excludedModules.size);
 
       res.render('index', { 
           tableData, 
