@@ -7,7 +7,6 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
         
-        /* PANEL DE PRUEBAS */
         .test-panel { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
         .test-panel select, .test-panel input { padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
         .test-panel button { padding: 6px 12px; background: #00b894; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
@@ -15,14 +14,12 @@
 
         .header-info { background: #eee; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; }
         
-        /* ESTILOS DEL ACORDEÓN DE AYUDA */
         .help-accordion { background: white; border-radius: 5px; border-left: 4px solid #007bff; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .help-accordion summary { padding: 15px; font-weight: bold; cursor: pointer; font-size: 15px; user-select: none; }
         .help-accordion summary:hover { background: #f1f5f9; }
         .help-content { padding: 0 15px 15px 15px; font-size: 14px; line-height: 1.5; color: #333; }
         .help-content h4 { margin: 15px 0 5px 0; color: #0056b3; }
 
-        /* ESTILOS DE LA TABLA */
         table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         th, td { padding: 12px; border: 1px solid #ddd; text-align: left; font-size: 14px; }
         th { background-color: #e2e8f0; color: #333; font-weight: bold; text-align: center; cursor: pointer; user-select: none; transition: background 0.2s;}
@@ -30,7 +27,6 @@
         th.sort-asc::after { content: " ▲"; font-size: 10px; }
         th.sort-desc::after { content: " ▼"; font-size: 10px; }
         
-        /* HOVER DE FILAS */
         tbody tr:hover { background-color: #f1f5f9; transition: background-color 0.1s ease-in-out; }
         
         td { text-align: center; }
@@ -43,7 +39,9 @@
         .btn-equipo { background-color: #e0f2fe; color: #0284c7; border-color: #bae6fd; font-weight: bold; }
         .btn-equipo:hover { background-color: #bae6fd; }
 
-        /* ESTILOS DEL MODAL */
+        /* Badges de Validación de Foros */
+        .forum-badge { display: block; margin: 4px auto 0 auto; padding: 3px 6px; font-size: 11px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; width: max-content; font-weight: 500; }
+
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fff; margin: 10% auto; padding: 25px; border: 1px solid #888; width: 380px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .close-btn { color: #aaa; float: right; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
@@ -109,6 +107,7 @@
             <% if (role === 'teacher') { %>
                 <tr>
                     <th data-type="string">Actividades</th>
+                    <th data-type="string">Tipo</th>
                     <th data-type="string">Módulo</th>
                     <th data-type="date">Disponible desde</th>
                     <th data-type="date">Entrega</th>
@@ -121,6 +120,7 @@
             <% } else { %>
                 <tr>
                     <th data-type="string">Actividades</th>
+                    <th data-type="string">Tipo</th>
                     <th data-type="string">Módulo</th>
                     <th data-type="date">Disponible desde</th>
                     <th data-type="date">Entrega</th>
@@ -134,6 +134,11 @@
             <% tableData.forEach(row => { %>
                 <tr>
                     <td class="align-left" data-value="<%= row.name %>"><a href="<%= row.url %>" target="_blank"><%= row.name %></a></td>
+                    
+                    <td data-value="<%= row.activity_type %>">
+                        <%= row.activity_type === 'Foro de discusión' ? '🟠 Foro de discusión' : row.activity_type %>
+                    </td>
+
                     <td data-value="<%= row.module_name %>"><%= row.module_name %></td>
                     
                     <td data-value="<%= row.raw_available %>"><%= row.available_from %></td>
@@ -161,6 +166,11 @@
                     <% } else { %>
                         <td data-value="<%= row.status %>">
                             <span style="font-weight: bold;"><%= row.status %></span>
+                            <% if (row.forum_indicators && row.forum_indicators.length > 0) { %>
+                                <% row.forum_indicators.forEach(indicator => { %>
+                                    <span class="forum-badge">✓ <%= indicator %></span>
+                                <% }) %>
+                            <% } %>
                         </td>
                     <% } %>
                 </tr>
@@ -168,7 +178,7 @@
             
             <% if (tableData.length === 0) { %>
                 <tr>
-                    <td colspan="<%= role === 'teacher' ? '9' : '7' %>">No hay actividades disponibles o publicadas.</td>
+                    <td colspan="<%= role === 'teacher' ? '10' : '8' %>">No hay actividades disponibles o publicadas.</td>
                 </tr>
             <% } %>
         </tbody>
@@ -181,19 +191,17 @@
             
             <div style="text-align: left; margin: 15px 0;">
                 <strong style="color: #555;">Miembros:</strong>
-                <ul id="modalMembersList" style="padding-left: 20px; font-size: 14px; margin-top: 8px; color: #333;">
-                </ul>
+                <ul id="modalMembersList" style="padding-left: 20px; font-size: 14px; margin-top: 8px; color: #333;"></ul>
             </div>
             
             <div style="display: flex; justify-content: space-between; margin-top: 25px;">
-                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; margin-right: 5px; text-align: center;">Colabora con tu Grupo</a>
-                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; margin-left: 5px; text-align: center;">Envía Correo</button>
+                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; margin-right: 5px; text-align: center;">🌐 Visitar</a>
+                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; margin-left: 5px; text-align: center;">✉️ Gmail a Equipo</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- LÓGICA DEL PANEL DE PRUEBAS ---
         function toggleUserIdInput() {
             const role = document.getElementById('roleSelector').value;
             document.getElementById('userIdInput').style.display = role === 'teacher' ? 'none' : 'inline-block';
@@ -202,19 +210,16 @@
         function cambiarVistaPrueba() {
             const role = document.getElementById('roleSelector').value;
             const userId = document.getElementById('userIdInput').value;
-            // Se mantiene el course_id desde la URL actual para no perder el contexto
             const urlParams = new URLSearchParams(window.location.search);
             const courseId = urlParams.get('course_id') || '317';
             
             let nuevaUrl = `/?course_id=${courseId}&role=${role}`;
-            
             if (role === 'student' && userId.trim() !== '') {
                 nuevaUrl += `&user_id=${userId.trim()}`;
             }
             window.location.href = nuevaUrl;
         }
 
-        // --- LÓGICA DEL MODAL Y CORREO ---
         function abrirModalEquipo(btn) {
             const groupName = btn.getAttribute('data-name');
             const groupId = btn.getAttribute('data-id');
@@ -256,12 +261,10 @@
 
         window.onclick = function(event) {
             let modal = document.getElementById('modalEquipo');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
+            if (event.target == modal) modal.style.display = "none";
         }
 
-        // --- LÓGICA DE ORDENAMIENTO DE TABLA ---
+        // --- SELECCIÓN Y ORDENAMIENTO NATIVO ---
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.getElementById('actividadesTable');
             const headers = table.querySelectorAll('th[data-type]');
@@ -272,7 +275,6 @@
 
             const sortTable = (colIndex, type, asc) => {
                 const rows = Array.from(tbody.querySelectorAll('tr'));
-                // Si la tabla dice "No hay actividades", no hacemos nada
                 if(rows.length === 1 && rows[0].cells.length === 1) return;
 
                 rows.sort((a, b) => {
@@ -280,14 +282,10 @@
                     let valB = b.cells[colIndex].getAttribute('data-value') || '';
 
                     if (type === 'number') {
-                        valA = parseFloat(valA) || 0;
-                        valB = parseFloat(valB) || 0;
-                        return asc ? valA - valB : valB - valA;
+                        return asc ? (parseFloat(valA) || 0) - (parseFloat(valB) || 0) : (parseFloat(valB) || 0) - (parseFloat(valA) || 0);
                     } else if (type === 'date') {
-                        // Las fechas vienen en formato ISO gracias a raw_date
                         return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
                     } else {
-                        // String por defecto
                         return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
                     }
                 });
@@ -295,7 +293,6 @@
                 tbody.innerHTML = '';
                 rows.forEach(row => tbody.appendChild(row));
                 
-                // Actualizar clases de iconos
                 headers.forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
                 headers[colIndex].classList.add(asc ? 'sort-asc' : 'sort-desc');
             };
@@ -313,11 +310,11 @@
                 });
             });
 
-            // ORDEN DEFAULT: Por Fecha de Entrega (índice 3), Ascendente
-            if(headers.length > 3) {
-                currentSortCol = 3;
+            // ORDEN DEFAULT POR FECHA DE ENTREGA (Columna índice 4 por la nueva inserción)
+            if(headers.length > 4) {
+                currentSortCol = 4;
                 currentSortAsc = true;
-                sortTable(3, 'date', true);
+                sortTable(4, 'date', true);
             }
         });
     </script>

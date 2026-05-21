@@ -30,7 +30,6 @@ lti.setup(
 
 lti.whitelist('/', '/api/get-groups');
 
-// --- DETECCIÓN LTI ---
 lti.onConnect(async (token, req, res) => {
   const { platformContext } = token;
   const custom = platformContext.custom || {};
@@ -52,7 +51,6 @@ web.use(express.json());
 web.set('view engine', 'ejs');
 web.use(express.static('public'));
 
-// --- RUTA PRINCIPAL ---
 web.get('/', async (req, res) => {
   const { course_id, role, user_id, sis_id } = req.query;
   
@@ -80,7 +78,7 @@ web.get('/', async (req, res) => {
           userNameToDisplay = role === 'teacher' ? 'Vista de Maestro' : 'Falta ID en URL';
       }
 
-      // 1. OBTENER MÓDULOS (Filtramos "plantilla" o "template")
+      // 1. OBTENER MÓDULOS (Excluyendo plantillas)
       const modRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/modules?include[]=items&per_page=100`, {
           headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
       });
@@ -90,12 +88,11 @@ web.get('/', async (req, res) => {
       modRes.data.forEach(mod => {
           if (/plantilla|template/i.test(mod.name)) {
               excludedModules.add(mod.id);
-              return; // Ignorar plantillas
+              return;
           }
           if (mod.items) {
               mod.items.forEach(item => {
                   if (item.content_id) moduleMap[item.content_id] = mod.name;
-                  // Guardar también por URL de foros si el content_id es distinto
                   if (item.type === 'Discussion' && item.page_url) {
                       moduleMap[item.page_url] = mod.name; 
                   }
@@ -103,17 +100,22 @@ web.get('/', async (req, res) => {
           }
       });
 
-      // 2. OBTENER TAREAS (Assignments) - Publicadas y sin exámenes
+      // 2. OBTENER TAREAS Y EXÁMENES DESDE ASSIGNMENTS
       const assigRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/assignments?per_page=100`, {
           headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
       });
-      let mixedActivities = assigRes.data.filter(a => {
-          const isExamen = /examen|parcial/i.test(a.name);
-          const isPublished = a.published !== false;
-          return !isExamen && isPublished;
-      }).map(a => ({ ...a, activity_type: 'assignment' }));
+      
+      let mixedActivities = assigRes.data.filter(a => a.published !== false).map(a => {
+          let tipoActividad = 'Tarea';
+          if (a.submission_types && a.submission_types.includes('online_quiz') || /examen|parcial/i.test(a.name)) {
+              tipoActividad = 'Examen';
+          } else if (a.submission_types && a.submission_types.includes('discussion_topic')) {
+              tipoActividad = 'Foro de discusión';
+          }
+          return { ...a, activity_type: tipoActividad };
+      });
 
-      // 3. OBTENER FOROS DE DISCUSIÓN (Que no sean tareas para no duplicar)
+      // 3. OBTENER FOROS DE DISCUSIÓN NO CALIFICABLES
       try {
           const forumRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/discussion_topics?per_page=100`, {
               headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
@@ -121,18 +123,18 @@ web.get('/', async (req, res) => {
           const nonGradedForums = forumRes.data.filter(f => !f.assignment_id && f.published !== false).map(f => ({
               ...f,
               id: f.id,
-              name: `🗣️ ${f.title}`,
+              name: f.title,
               html_url: f.html_url,
-              unlock_at: f.delayed_post_at, // Foros usan esta prop
+              unlock_at: f.delayed_post_at, 
               due_at: null,
               lock_at: f.lock_at,
               group_category_id: f.group_category_id,
-              activity_type: 'forum'
+              activity_type: 'Foro de discusión'
           }));
           mixedActivities = mixedActivities.concat(nonGradedForums);
       } catch (e) { console.error("Aviso: No se pudieron cargar los foros adicionales"); }
 
-      // 4. LÓGICA DIVIDIDA POR ROL
+      // 4. LOGICA CARGA DE ROLES
       if (role === 'teacher') {
           try {
               const studentsRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/users?enrollment_type[]=student&per_page=100`, {
@@ -155,9 +157,7 @@ web.get('/', async (req, res) => {
                       teacherStats[sub.assignment_id].revisadas++;
                   }
               });
-          } catch (e) {
-              console.error("❌ Error API Maestro:", e.message);
-          }
+          } catch (e) { console.error("Error API Maestro:", e.message); }
 
       } else if (validUserId) {
           try {
@@ -177,27 +177,21 @@ web.get('/', async (req, res) => {
                       const membersRes = await axios.get(`${PLATFORM_URL}/api/v1/groups/${g.id}/users?include[]=email&per_page=100`, {
                           headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
                       });
-                      
                       const isMember = membersRes.data.some(u => u.id == validUserId);
                       if (isMember && g.group_category_id) {
-                          const memberDetails = membersRes.data.map(m => ({
-                              name: m.name || m.short_name,
-                              email: m.email || m.login_id || ''
-                          }));
-
                           userGroupsMap[g.group_category_id] = { 
                               name: g.name, 
                               id: g.id,
-                              members: memberDetails
+                              members: membersRes.data.map(m => ({ name: m.name || m.short_name, email: m.email || '' }))
                           };
                       }
                   } catch (errMember) {}
               }));
-          } catch (e) { console.error("❌ Error API Grupos Alumno:", e.message); }
+          } catch (e) { console.error("Error API Grupos:", e.message); }
       }
 
-      // 5. ARMAR TABLA FINAL
-      let tableData = mixedActivities.map(a => {
+      // 5. PROCESAMIENTO AVANZADO Y CONSTRUCCIÓN DE TABLA (Soporta llamadas Async)
+      let tableData = await Promise.all(mixedActivities.map(async (a) => {
           const formatDate = (dateStr) => {
               if (!dateStr) return "-";
               const d = new Date(dateStr);
@@ -205,14 +199,12 @@ web.get('/', async (req, res) => {
           };
 
           const rawDateStr = (dateStr) => dateStr ? new Date(dateStr).toISOString() : '9999-12-31T23:59:59Z';
-
           const isGroup = a.group_category_id !== null;
           
-          // Intentar obtener el módulo de ID o de la URL para los foros
           let moduleName = moduleMap[a.id] || "Sin módulo";
-          if (moduleName === "Sin módulo" && a.activity_type === 'forum') {
+          if (moduleName === "Sin módulo" && a.activity_type === 'Foro de discusión') {
                const urlParts = a.html_url.split('/');
-               const topicUrl = urlParts[urlParts.length -1];
+               const topicUrl = urlParts[urlParts.length - 1];
                if(moduleMap[topicUrl]) moduleName = moduleMap[topicUrl];
           }
 
@@ -221,37 +213,80 @@ web.get('/', async (req, res) => {
               name: a.name,
               url: a.html_url,
               module_name: moduleName,
-              // Strings legibles
               available_from: formatDate(a.unlock_at),
               due_date: formatDate(a.due_at),
               lock_date: formatDate(a.lock_at),
-              // Datos crudos para JS sorting
               raw_available: rawDateStr(a.unlock_at),
               raw_due: rawDateStr(a.due_at),
               raw_lock: rawDateStr(a.lock_at),
-              
               is_group: isGroup,
-              activity_type: a.activity_type
+              activity_type: a.activity_type,
+              forum_indicators: [] // Guardará sub-estados de foros
           };
 
           if (role === 'teacher') {
               const stats = teacherStats[a.id] || { entregadas: 0, revisadas: 0 };
-              row.entregas = a.activity_type === 'forum' ? '-' : `${stats.entregadas}/${totalStudentsCount}`;
-              row.revisadas = a.activity_type === 'forum' ? '-' : stats.revisadas;
-              row.speedgrader_url = a.activity_type === 'forum' ? a.html_url : `${PLATFORM_URL}/courses/${course_id}/gradebook/speed_grader?assignment_id=${a.id}`;
+              row.entregas = a.activity_type === 'Foro de discusión' && !a.assignment_id ? '-' : `${stats.entregadas}/${totalStudentsCount}`;
+              row.revisadas = a.activity_type === 'Foro de discusión' && !a.assignment_id ? '-' : stats.revisadas;
+              row.speedgrader_url = a.activity_type === 'Foro de discusión' && !a.assignment_id ? a.html_url : `${PLATFORM_URL}/courses/${course_id}/gradebook/speed_grader?assignment_id=${a.id}`;
           } else {
+              // Estatus por defecto
               let estatus = "🔴 No entregada";
-              if (a.activity_type === 'forum') {
-                  estatus = "⚪ Foro (Participación)";
-              } else if (submissionsMap[a.id]) {
+              if (submissionsMap[a.id]) {
                   const sub = submissionsMap[a.id];
                   if (sub.workflow_state === 'graded' || sub.graded_at) {
                       estatus = "🟢 Calificada";
                   } else if (sub.workflow_state === 'submitted' || sub.submitted_at) {
                       estatus = sub.late ? "🟡 Entrega con atraso" : "🔵 Entregada";
                   }
+              } else if (a.activity_type === 'Foro de discusión' && !a.assignment_id) {
+                  estatus = "🔴 No entregada"; // Foros no obligatorios asumen no entregada si no hay posts
               }
-              
+
+              // --- RETO PRINCIPAL: VALIDACIÓN AVANZADA DE FOROS ---
+              if (a.activity_type === 'Foro de discusión' && validUserId) {
+                  try {
+                      let topicId = a.discussion_topic ? a.discussion_topic.id : a.id;
+                      const viewRes = await axios.get(`${PLATFORM_URL}/api/v1/courses/${course_id}/discussion_topics/${topicId}/view`, {
+                          headers: { 'Authorization': `Bearer ${CANVAS_TOKEN}` }
+                      });
+
+                      const viewEntries = viewRes.data.view || [];
+                      let hasInitialPost = false;
+                      let hasFeedbackPost = false;
+
+                      viewEntries.forEach(entry => {
+                          // Entrada raíz = Aportación inicial
+                          if (entry.user_id == validUserId && !entry.parent_id) {
+                              hasInitialPost = true;
+                          }
+                          // Revisar respuestas anidadas creadas por el alumno
+                          if (entry.replies) {
+                              entry.replies.forEach(reply => {
+                                  if (reply.user_id == validUserId) {
+                                      hasFeedbackPost = true;
+                                  }
+                                  if (reply.replies) {
+                                      reply.replies.forEach(subReply => {
+                                          if (subReply.user_id == validUserId) hasFeedbackPost = true;
+                                      });
+                                  }
+                              });
+                          }
+                      });
+
+                      if (hasInitialPost) row.forum_indicators.push("Aportación inicial realizada");
+                      if (hasFeedbackPost) row.forum_indicators.push("Retroalimentación realizada");
+                      
+                      // Si detectamos participación real pero el estado de Canvas sigue vacío (foros no calificables)
+                      if ((hasInitialPost || hasFeedbackPost) && estatus === "🔴 No entregada" && !a.assignment_id) {
+                          estatus = "🔵 Entregada";
+                      }
+                  } catch (forumErr) {
+                      console.error(`No se pudo verificar detalle del foro ${topicId}:`, forumErr.message);
+                  }
+              }
+
               let myGroupName = "Aún no tienes equipo";
               let myGroupId = null;
               let myGroupMembers = [];
@@ -269,9 +304,8 @@ web.get('/', async (req, res) => {
           }
 
           return row;
-      });
+      }));
 
-      // Filtrar tareas huerfanas de modulos que fueron excluidos (plantillas)
       tableData = tableData.filter(row => row.module_name !== 'Sin módulo' || !excludedModules.size);
 
       res.render('index', { 
@@ -284,7 +318,7 @@ web.get('/', async (req, res) => {
 
   } catch (error) {
       console.error("❌ ERROR GENERAL:", error.message);
-      res.status(500).send("Error cargando los datos. Revisa la consola.");
+      res.status(500).send("Error cargando los datos.");
   }
 });
 
@@ -302,5 +336,5 @@ web.get('/', async (req, res) => {
   host.enable('trust proxy');
   host.use('/', lti.app);
   host.use('/', web);
-  host.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+  host.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
 })();
