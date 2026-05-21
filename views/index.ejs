@@ -5,100 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actividades y Grupos</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
-        
-        .test-panel { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
-        .test-panel select, .test-panel input { padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
-        .test-panel button { padding: 6px 12px; background: #00b894; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
-        .test-panel button:hover { background: #00a884; }
+        /* =========================================
+           VARIABLES Y MODO OSCURO AUTOMÁTICO
+           ========================================= */
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-panel: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #e2e8f0;
+            --primary: #007bff;
+            --primary-hover: #0056b3;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            
+            /* Colores de Badges (Modo Claro) */
+            --bg-blue: #dbeafe; --text-blue: #1e40af; --border-blue: #bfdbfe;
+            --bg-yellow: #fef9c3; --text-yellow: #854d0e; --border-yellow: #fde047;
+            --bg-red: #fee2e2; --text-red: #991b1b; --border-red: #fecaca;
+            --bg-green: #dcfce7; --text-green: #166534; --border-green: #bbf7d0;
+            --bg-orange: #ffedd5; --text-orange: #9a3412; --border-orange: #fed7aa;
+        }
 
-        .header-info { background: #eee; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; }
-        
-        .help-accordion { background: white; border-radius: 5px; border-left: 4px solid #007bff; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .help-accordion summary { padding: 15px; font-weight: bold; cursor: pointer; font-size: 15px; user-select: none; }
-        .help-accordion summary:hover { background: #f1f5f9; }
-        .help-content { padding: 0 15px 15px 15px; font-size: 14px; line-height: 1.5; color: #333; }
-        .help-content h4 { margin: 15px 0 5px 0; color: #0056b3; }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #121212;
+                --bg-panel: #1e1e1e;
+                --text-main: #e0e0e0;
+                --text-muted: #a0a0a0;
+                --border-color: #333333;
+                --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+                --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+                
+                /* Ajuste de Badges para Modo Oscuro */
+                --bg-blue: #1e3a8a; --text-blue: #bfdbfe; --border-blue: #1e40af;
+                --bg-yellow: #713f12; --text-yellow: #fef08a; --border-yellow: #854d0e;
+                --bg-red: #7f1d1d; --text-red: #fecaca; --border-red: #991b1b;
+                --bg-green: #14532d; --text-green: #bbf7d0; --border-green: #166534;
+                --bg-orange: #7c2d12; --text-orange: #fed7aa; --border-orange: #9a3412;
+            }
+        }
 
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; font-size: 14px; }
-        th { background-color: #e2e8f0; color: #333; font-weight: bold; text-align: center; cursor: pointer; user-select: none; transition: background 0.2s;}
-        th:hover { background-color: #cbd5e1; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 20px; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        
+        .test-panel { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; color: #333; }
+        .test-panel select, .test-panel input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+        .test-panel button { padding: 7px 14px; background: #00b894; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        .header-info { background: var(--bg-panel); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); }
+
+        /* =========================================
+           NUEVO DISEÑO: SECCIÓN DE INSTRUCCIONES
+           ========================================= */
+        .modern-accordion { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px; box-shadow: var(--card-shadow); overflow: hidden; }
+        .modern-accordion summary { padding: 18px 20px; font-weight: 600; font-size: 16px; cursor: pointer; user-select: none; display: flex; align-items: center; background-color: rgba(0,123,255,0.05); transition: background 0.2s; list-style: none; outline: none; }
+        .modern-accordion summary::-webkit-details-marker { display: none; }
+        .modern-accordion summary:hover { background-color: rgba(0,123,255,0.1); }
+        .modern-accordion summary .icon { margin-right: 10px; font-size: 20px; }
+        
+        .accordion-content { padding: 25px; border-top: 1px solid var(--border-color); animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .help-header { margin-bottom: 25px; }
+        .help-header h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        .help-header p { margin: 0; color: var(--text-muted); line-height: 1.5; font-size: 15px; }
+
+        .help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        
+        .help-card { background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
+        .help-card:hover { transform: translateY(-3px); box-shadow: var(--card-hover-shadow); }
+        .help-card h4 { margin: 0 0 15px 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+        .help-card ul { margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.7; }
+        .help-card li { margin-bottom: 8px; }
+        .help-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-top: 0; }
+        
+        /* Badges de Estatus */
+        .status-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; width: fit-content; }
+        
+        .badge-blue { background: var(--bg-blue); color: var(--text-blue); border: 1px solid var(--border-blue); }
+        .badge-yellow { background: var(--bg-yellow); color: var(--text-yellow); border: 1px solid var(--border-yellow); }
+        .badge-red { background: var(--bg-red); color: var(--text-red); border: 1px solid var(--border-red); }
+        .badge-green { background: var(--bg-green); color: var(--text-green); border: 1px solid var(--border-green); }
+        .badge-orange { background: var(--bg-orange); color: var(--text-orange); border: 1px solid var(--border-orange); }
+
+        .badge-desc { font-size: 13px; color: var(--text-muted); margin-left: 5px; display: block; margin-top: 2px; }
+
+        /* =========================================
+           TABLA Y MODAL (Mantenido y adaptado a colores)
+           ========================================= */
+        table { width: 100%; border-collapse: collapse; background: var(--bg-panel); box-shadow: var(--card-shadow); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 14px 12px; border-bottom: 1px solid var(--border-color); text-align: center; font-size: 14px; color: var(--text-main); }
+        th { background-color: rgba(0,0,0,0.03); font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s;}
+        th:hover { background-color: rgba(0,0,0,0.06); }
         th.sort-asc::after { content: " ▲"; font-size: 10px; }
         th.sort-desc::after { content: " ▼"; font-size: 10px; }
+        tbody tr:hover { background-color: rgba(0,123,255,0.03); }
         
-        tbody tr:hover { background-color: #f1f5f9; transition: background-color 0.1s ease-in-out; }
-        
-        td { text-align: center; }
         td.align-left { text-align: left; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        a { color: var(--primary); text-decoration: none; font-weight: 500; }
+        a:hover { text-decoration: underline; color: var(--primary-hover); }
         
-        .btn-link { display: inline-block; padding: 5px 10px; background-color: #f1f1f1; border-radius: 4px; color: #007bff; border: 1px solid #ddd; cursor: pointer; text-decoration: none; font-size: 13px;}
-        .btn-link:hover { background-color: #e2e2e2; }
-        .btn-equipo { background-color: #e0f2fe; color: #0284c7; border-color: #bae6fd; font-weight: bold; }
-        .btn-equipo:hover { background-color: #bae6fd; }
+        .btn-link { display: inline-block; padding: 6px 12px; background-color: var(--bg-body); border-radius: 6px; color: var(--primary); border: 1px solid var(--border-color); cursor: pointer; text-decoration: none; font-size: 13px; transition: all 0.2s; }
+        .btn-link:hover { background-color: var(--border-color); }
+        
+        /* Badges en la tabla */
+        .forum-badge-table { display: block; margin: 6px auto 0 auto; font-size: 11px; }
 
-        /* Badges de Validación de Foros */
-        .forum-badge { display: block; margin: 4px auto 0 auto; padding: 3px 6px; font-size: 11px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; width: max-content; font-weight: 500; }
-
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: #fff; margin: 10% auto; padding: 25px; border: 1px solid #888; width: 380px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .close-btn { color: #aaa; float: right; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
-        .close-btn:hover { color: black; }
-        .btn-correo { background-color: #d93025; color: white; border: none; }
-        .btn-correo:hover { background-color: #c5221f; color: white; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+        .modal-content { background-color: var(--bg-panel); margin: 8% auto; padding: 30px; border: 1px solid var(--border-color); width: 400px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); color: var(--text-main); }
+        .close-btn { color: var(--text-muted); float: right; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
+        .close-btn:hover { color: var(--text-main); }
+        .btn-correo { background-color: #dc2626; color: white; border: none; }
+        .btn-correo:hover { background-color: #b91c1c; color: white; }
     </style>
 </head>
 <body>
 
     <div class="test-panel">
-        <b>🛠️ Panel de Pruebas LTI:</b>
+        <b>🛠️ Panel LTI:</b>
         <label for="roleSelector">Rol:</label>
         <select id="roleSelector" onchange="toggleUserIdInput()">
             <option value="teacher" <%= role === 'teacher' ? 'selected' : '' %>>Maestro</option>
             <option value="student" <%= role === 'student' ? 'selected' : '' %>>Alumno</option>
         </select>
         
-        <% if (role === 'teacher') { %>
-            <input type="text" id="userIdInput" placeholder="ID del Alumno (ej. 1067)" value="" style="display: none;">
-        <% } else { %>
-            <input type="text" id="userIdInput" placeholder="ID del Alumno (ej. 1067)" value="<%= (user_id !== 'NO_APLICA') ? user_id : '' %>" style="display: inline-block;">
-        <% } %>
-        
+        <input type="text" id="userIdInput" placeholder="ID del Alumno (ej. 1067)" value="<%= (role !== 'teacher' && user_id !== 'NO_APLICA') ? user_id : '' %>" style="display: <%= role === 'teacher' ? 'none' : 'inline-block' %>;">
         <button onclick="cambiarVistaPrueba()">🔄 Actualizar Vista</button>
     </div>
 
     <div class="header-info">
-        <b>Rol actual:</b> <%= role === 'teacher' ? 'Maestro' : 'Alumno' %> | 
-        <% if (role !== 'teacher') { %>
-            <b>Canvas ID:</b> <%= user_id %> |
-        <% } %>
+        <b>Rol actual:</b> <%= role === 'teacher' ? '👨‍🏫 Maestro' : '🎓 Alumno' %> | 
+        <% if (role !== 'teacher') { %> <b>Canvas ID:</b> <%= user_id %> | <% } %>
         <b>Nombre:</b> <%= userNameToDisplay %>
     </div>
 
-    <details class="help-accordion">
-        <summary>ℹ️ Guía de Actividades, Fechas y Modalidad</summary>
-        <div class="help-content">
-            <p>Este apartado te permite consultar todas las actividades de tu materia, incluyendo tareas individuales y en equipo, foros y exámenes. Desde esta vista puedes identificar el módulo al que pertenece cada actividad, las fechas clave, la modalidad de trabajo, el acceso al espacio de tu equipo (si aplica) y el estatus de tu entrega.</p>
+    <details class="modern-accordion">
+        <summary>
+            <span class="icon">📖</span> 
+            <span>Instrucciones y Guía de Uso de la Plataforma</span>
+        </summary>
+        <div class="accordion-content">
             
-            <h4>Fechas y su significado</h4>
-            <ul>
-                <li><b>Disponible desde:</b> Es la fecha en que la actividad se publica y se vuelve visible para ti.</li>
-                <li><b>Fecha de entrega:</b> Es la fecha límite oficial para entregar la actividad.</li>
-                <li><b>Hasta:</b> Es la fecha final en la que aún puedes entregar. Puede coincidir con la fecha de entrega o reflejar una prórroga otorgada por tu profesor.</li>
-            </ul>
+            <% if (role === 'teacher') { %>
+                <div class="help-header">
+                    <h3>👨‍🏫 Instrucciones para MAESTROS</h3>
+                    <p>Este apartado permite consultar todas las actividades de la materia, incluyendo: <b>Tareas individuales, Tareas en equipo, Foros y Exámenes.</b></p>
+                </div>
 
-            <h4>Modalidad y equipos</h4>
-            <ul>
-                <li><b>👤 Individual:</b> la entrega es personal.</li>
-                <li><b>👥 Equipo:</b> la entrega se realiza en colaboración con tus compañeros de equipo.</li>
-            </ul>
-            <p>Para consultar el nombre e integrantes de tu equipo, haz clic en el botón <b>Equipo</b> dentro de la columna de Modalidad.</p>
-            <p>Para ingresar al espacio de tu equipo, comunicarte y compartir información con ellos, haz clic en <b>Visitar</b> dentro del menú del equipo.</p>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <h4>📌 ¿Qué puedes hacer aquí?</h4>
+                        <ul>
+                            <li>Identificar el módulo al que pertenece la actividad.</li>
+                            <li>Consultar fechas importantes de entrega y disponibilidad.</li>
+                            <li>Ver la modalidad de trabajo (Individual o Equipo).</li>
+                            <li>Revisar el avance general de entregas del grupo.</li>
+                            <li>Consultar el número de revisiones realizadas.</li>
+                            <li>Acceder directamente a <i>SpeedGrader</i> para calificar.</li>
+                        </ul>
+                    </div>
 
-            <h4>Estatus de entrega</h4>
-            <p>🔵 Entregada &nbsp;|&nbsp; 🟡 Entrega con atraso &nbsp;|&nbsp; 🔴 No entregada &nbsp;|&nbsp; 🟢 Calificada</p>
+                    <div class="help-card">
+                        <h4>📅 Fechas y su significado</h4>
+                        <ul>
+                            <li><b>Disponible desde:</b> Fecha en que la actividad se publica para los estudiantes.</li>
+                            <li><b>Fecha de entrega:</b> Fecha límite oficial de entrega estipulada.</li>
+                            <li><b>Hasta:</b> Fecha final permitida para entregar en el sistema. (Puede representar una prórroga).</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>🤝 Modalidad y Equipos</h4>
+                        <ul>
+                            <li><b>👤 Individual:</b> Cada estudiante entrega de manera personal.</li>
+                            <li><b>👥 Equipo:</b> La entrega se realiza por equipo.</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><b>Desde la modalidad de equipos puedes:</b></p>
+                        <ul>
+                            <li>Acceder al apartado general de grupos.</li>
+                            <li>Consultar o editar la conformación de los equipos.</li>
+                            <li>Entrar al espacio colaborativo de cada equipo.</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>📊 Seguimiento de entregas</h4>
+                        <ul>
+                            <li><b>Entregas:</b> Cantidad de trabajos recibidos respecto al total de alumnos esperados.</li>
+                            <li><b>Revisadas:</b> Cantidad de actividades que ya han sido evaluadas.</li>
+                            <li><b>Revisión:</b> Acceso directo a la herramienta <i>SpeedGrader</i> mediante el botón “Calificar” en la tabla.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            <% } else { %>
+                <div class="help-header">
+                    <h3>🎓 Instrucciones para ALUMNOS</h3>
+                    <p>Este apartado te permite consultar todas las actividades de tu materia, incluyendo: <b>Tareas individuales, Tareas en equipo, Foros y Exámenes.</b></p>
+                </div>
+
+                <div class="help-grid">
+                    <div class="help-card">
+                        <h4>📌 ¿Qué puedes hacer aquí?</h4>
+                        <ul>
+                            <li>Identificar el módulo al que pertenece cada actividad.</li>
+                            <li>Consultar las fechas importantes y límites.</li>
+                            <li>Ver la modalidad de trabajo para cada entrega.</li>
+                            <li>Acceder directamente al espacio colaborativo de tu equipo.</li>
+                            <li>Consultar el estatus actualizado de tu entrega.</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>📅 Fechas y su significado</h4>
+                        <ul>
+                            <li><b>Disponible desde:</b> Fecha en que la actividad se publica y aparece visible para ti.</li>
+                            <li><b>Fecha de entrega:</b> Fecha límite oficial para entregar a tiempo.</li>
+                            <li><b>Hasta:</b> Fecha final permitida para entregar; puede incluir prórrogas otorgadas por el profesor.</li>
+                        </ul>
+                        
+                        <h4 style="margin-top: 20px;">🤝 Modalidad y Equipos</h4>
+                        <ul>
+                            <li><b>👤 Individual:</b> La entrega es personal.</li>
+                            <li><b>👥 Equipo:</b> La actividad se realiza en colaboración con compañeros.</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><b>Opciones de equipo:</b> Puedes consultar el nombre e integrantes, o hacer clic en "Visitar" para ingresar a tu espacio colaborativo.</p>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>📝 Estatus de entrega</h4>
+                        <div class="status-list">
+                            <div><span class="badge badge-blue">🔵 Entregada</span></div>
+                            <div><span class="badge badge-yellow">🟡 Entrega con atraso</span></div>
+                            <div><span class="badge badge-red">🔴 No entregada</span></div>
+                            <div><span class="badge badge-green">🟢 Calificada</span></div>
+                        </div>
+                    </div>
+
+                    <div class="help-card">
+                        <h4>🗣️ Estatus específicos para Foros</h4>
+                        <div class="status-list">
+                            <div>
+                                <span class="badge badge-orange">🟠 Aportación inicial</span>
+                                <span class="badge-desc">Ya publicaste tu aportación, pero falta retroalimentar.</span>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <span class="badge badge-orange">🟠 Retroalimentación</span>
+                                <span class="badge-desc">Ya retroalimentaste a compañeros, pero falta tu aportación inicial.</span>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <span class="badge badge-blue">🔵 Entregada</span>
+                                <span class="badge-desc">Ambas participaciones (aportación y retroalimentación) completadas.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
         </div>
     </details>
 
@@ -134,13 +298,8 @@
             <% tableData.forEach(row => { %>
                 <tr>
                     <td class="align-left" data-value="<%= row.name %>"><a href="<%= row.url %>" target="_blank"><%= row.name %></a></td>
-                    
-                    <td data-value="<%= row.activity_type %>">
-                        <%= row.activity_type === 'Foro de discusión' ? '🟠 Foro de discusión' : row.activity_type %>
-                    </td>
-
+                    <td data-value="<%= row.activity_type %>"><%= row.activity_type === 'Foro de discusión' ? '🗣️ Foro de discusión' : row.activity_type %></td>
                     <td data-value="<%= row.module_name %>"><%= row.module_name %></td>
-                    
                     <td data-value="<%= row.raw_available %>"><%= row.available_from %></td>
                     <td data-value="<%= row.raw_due %>"><%= row.due_date %></td>
                     <td data-value="<%= row.raw_lock %>"><%= row.lock_date %></td>
@@ -148,9 +307,9 @@
                     <td data-value="<%= row.is_group ? 'Equipo' : 'Individual' %>">
                         <% if (role !== 'teacher' && row.is_group) { %>
                             <% if (row.group_id) { %>
-                                👥 <button class="btn-link btn-equipo" onclick="abrirModalEquipo(this)" data-name="<%= row.group_name %>" data-id="<%= row.group_id %>" data-members="<%= encodeURIComponent(JSON.stringify(row.group_members)) %>">Equipo</button>
+                                <button class="btn-link" onclick="abrirModalEquipo(this)" data-name="<%= row.group_name %>" data-id="<%= row.group_id %>" data-members="<%= encodeURIComponent(JSON.stringify(row.group_members)) %>">👥 Equipo</button>
                             <% } else { %>
-                                👥 <span style="color: #888; font-size: 12px;">Sin equipo asignado</span>
+                                👥 <span style="color: var(--text-muted); font-size: 12px;">Sin equipo</span>
                             <% } %>
                         <% } else { %>
                             <%= row.is_group ? '👥 Equipo' : '👤 Individual' %>
@@ -160,15 +319,20 @@
                     <% if (role === 'teacher') { %>
                         <td data-value="<%= row.entregas.split('/')[0] || 0 %>"><%= row.entregas %></td>
                         <td data-value="<%= row.revisadas %>"><%= row.revisadas %></td>
-                        <td>
-                            <a href="<%= row.speedgrader_url %>" target="_blank" class="btn-link">📝 Calificar</a>
-                        </td>
+                        <td><a href="<%= row.speedgrader_url %>" target="_blank" class="btn-link">📝 Calificar</a></td>
                     <% } else { %>
                         <td data-value="<%= row.status %>">
-                            <span style="font-weight: bold;"><%= row.status %></span>
+                            <% 
+                               let badgeClass = "badge-red";
+                               if(row.status.includes("Entregada")) badgeClass = "badge-blue";
+                               if(row.status.includes("atraso")) badgeClass = "badge-yellow";
+                               if(row.status.includes("Calificada")) badgeClass = "badge-green";
+                            %>
+                            <span class="badge <%= badgeClass %>"><%= row.status %></span>
+                            
                             <% if (row.forum_indicators && row.forum_indicators.length > 0) { %>
                                 <% row.forum_indicators.forEach(indicator => { %>
-                                    <span class="forum-badge">✓ <%= indicator %></span>
+                                    <span class="badge badge-orange forum-badge-table">🟠 <%= indicator %></span>
                                 <% }) %>
                             <% } %>
                         </td>
@@ -178,7 +342,7 @@
             
             <% if (tableData.length === 0) { %>
                 <tr>
-                    <td colspan="<%= role === 'teacher' ? '10' : '8' %>">No hay actividades disponibles o publicadas.</td>
+                    <td colspan="<%= role === 'teacher' ? '10' : '8' %>" style="padding: 30px; color: var(--text-muted);">No hay actividades disponibles o publicadas en este momento.</td>
                 </tr>
             <% } %>
         </tbody>
@@ -187,16 +351,16 @@
     <div id="modalEquipo" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="cerrarModal()">&times;</span>
-            <h3 id="modalGroupName" style="margin-top: 0; color: #333;">Tu Equipo</h3>
+            <h3 id="modalGroupName" style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Tu Equipo</h3>
             
             <div style="text-align: left; margin: 15px 0;">
-                <strong style="color: #555;">Miembros:</strong>
-                <ul id="modalMembersList" style="padding-left: 20px; font-size: 14px; margin-top: 8px; color: #333;"></ul>
+                <strong style="color: var(--text-muted); font-size: 13px; text-transform: uppercase;">Integrantes:</strong>
+                <ul id="modalMembersList" style="padding-left: 20px; font-size: 15px; margin-top: 10px; line-height: 1.6;"></ul>
             </div>
             
-            <div style="display: flex; justify-content: space-between; margin-top: 25px;">
-                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; margin-right: 5px; text-align: center;">🌐 Visitar</a>
-                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; margin-left: 5px; text-align: center;">✉️ Gmail a Equipo</button>
+            <div style="display: flex; justify-content: space-between; margin-top: 30px; gap: 10px;">
+                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">🌐 Visitar Espacio</a>
+                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">✉️ Correo Grupal</button>
             </div>
         </div>
     </div>
@@ -234,15 +398,13 @@
                 let li = document.createElement('li');
                 li.innerText = m.name;
                 list.appendChild(li);
-                if (m.email && m.email.trim() !== '') {
-                    emails.push(m.email);
-                }
+                if (m.email && m.email.trim() !== '') emails.push(m.email);
             });
             document.getElementById('btnIrGrupo').href = '<%= platform_url %>/groups/' + groupId;
 
             const btnCorreo = document.getElementById('btnEnviarCorreo');
             if (emails.length > 0) {
-                btnCorreo.style.display = 'inline-block';
+                btnCorreo.style.display = 'flex';
                 btnCorreo.onclick = function(e) {
                     e.preventDefault();
                     const correos = emails.join(',');
@@ -264,7 +426,7 @@
             if (event.target == modal) modal.style.display = "none";
         }
 
-        // --- SELECCIÓN Y ORDENAMIENTO NATIVO ---
+        // --- ORDENAMIENTO NATIVO ---
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.getElementById('actividadesTable');
             const headers = table.querySelectorAll('th[data-type]');
@@ -310,7 +472,7 @@
                 });
             });
 
-            // ORDEN DEFAULT POR FECHA DE ENTREGA (Columna índice 4 por la nueva inserción)
+            // ORDEN DEFAULT POR FECHA DE ENTREGA (Columna 4)
             if(headers.length > 4) {
                 currentSortCol = 4;
                 currentSortAsc = true;
