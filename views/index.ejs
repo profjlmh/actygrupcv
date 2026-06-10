@@ -6,286 +6,328 @@
     <title>Actividades y Grupos</title>
     <style>
         /* =========================================
-           VARIABLES Y MODO OSCURO AUTOMÁTICO
+           VARIABLES Y PALETA DE COLORES INSTITUCIONAL
            ========================================= */
         :root {
-            --bg-body: #f4f7f6;
+            /* Colores Base */
+            --bg-body: #f8f9fa;
             --bg-panel: #ffffff;
-            --text-main: #333333;
-            --text-muted: #666666;
+            --text-main: #2b3035;
+            --text-muted: #6c757d;
             --border-color: #e2e8f0;
-            --primary: #007bff;
-            --primary-hover: #0056b3;
+            
+            /* Color Institucional: Naranja Anáhuac */
+            --primary: #FF5900;
+            --primary-hover: #e65000;
+            
+            /* Sombras */
             --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             
-            /* Colores de Badges (Modo Claro) */
-            --bg-blue: #dbeafe; --text-blue: #1e40af; --border-blue: #bfdbfe;
-            --bg-yellow: #fef9c3; --text-yellow: #854d0e; --border-yellow: #fde047;
-            --bg-red: #fee2e2; --text-red: #991b1b; --border-red: #fecaca;
-            --bg-green: #dcfce7; --text-green: #166534; --border-green: #bbf7d0;
-            --bg-orange: #ffedd5; --text-orange: #9a3412; --border-orange: #fed7aa;
+            /* Colores de Badges adaptados para armonizar con el naranja */
+            --bg-blue: #e0f2fe; --text-blue: #0369a1; --border-blue: #bae6fd;
+            --bg-yellow: #fef9c3; --text-yellow: #a16207; --border-yellow: #fde047;
+            --bg-red: #fee2e2; --text-red: #b91c1c; --border-red: #fecaca;
+            --bg-green: #dcfce7; --text-green: #15803d; --border-green: #bbf7d0;
+            --bg-orange: #fff7ed; --text-orange: #c2410c; --border-orange: #ffedd5;
+            --bg-gray: #f1f5f9; --text-gray: #475569; --border-gray: #cbd5e1;
+            
+            /* Colores de texto especiales */
+            --text-color-orange: #FF5900;
+            --text-color-blue: #0369a1;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-body: #121212;
                 --bg-panel: #1e1e1e;
-                --text-main: #e0e0e0;
-                --text-muted: #a0a0a0;
-                --border-color: #333333;
+                --text-main: #f3f4f6;
+                --text-muted: #9ca3af;
+                --border-color: #374151;
+                
+                /* El Naranja Anáhuac resalta excelente en modo oscuro */
+                --primary: #FF5900;
+                --primary-hover: #ff7a33;
+                
                 --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
                 --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
                 
-                /* Ajuste de Badges para Modo Oscuro */
                 --bg-blue: #1e3a8a; --text-blue: #bfdbfe; --border-blue: #1e40af;
                 --bg-yellow: #713f12; --text-yellow: #fef08a; --border-yellow: #854d0e;
                 --bg-red: #7f1d1d; --text-red: #fecaca; --border-red: #991b1b;
                 --bg-green: #14532d; --text-green: #bbf7d0; --border-green: #166534;
                 --bg-orange: #7c2d12; --text-orange: #fed7aa; --border-orange: #9a3412;
+                --bg-gray: #334155; --text-gray: #cbd5e1; --border-gray: #475569;
+                
+                --text-color-orange: #FF5900;
+                --text-color-blue: #60a5fa;
             }
         }
 
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 20px; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
-        
-        .test-panel { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; color: #333; }
-        .test-panel select, .test-panel input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-        .test-panel button { padding: 7px 14px; background: #00b894; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        
-        .header-info { background: var(--bg-panel); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); }
 
         /* =========================================
-           NUEVO DISEÑO: SECCIÓN DE INSTRUCCIONES
+           ACORDEÓN Y GUÍA
            ========================================= */
         .modern-accordion { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px; box-shadow: var(--card-shadow); overflow: hidden; }
-        .modern-accordion summary { padding: 18px 20px; font-weight: 600; font-size: 16px; cursor: pointer; user-select: none; display: flex; align-items: center; background-color: rgba(0,123,255,0.05); transition: background 0.2s; list-style: none; outline: none; }
+        .modern-accordion summary { padding: 18px 20px; font-weight: 600; font-size: 16px; cursor: pointer; user-select: none; display: flex; align-items: center; background-color: rgba(255, 89, 0, 0.05); transition: background 0.2s; list-style: none; outline: none; color: var(--primary); }
         .modern-accordion summary::-webkit-details-marker { display: none; }
-        .modern-accordion summary:hover { background-color: rgba(0,123,255,0.1); }
+        .modern-accordion summary:hover { background-color: rgba(255, 89, 0, 0.09); }
         .modern-accordion summary .icon { margin-right: 10px; font-size: 20px; }
         
         .accordion-content { padding: 25px; border-top: 1px solid var(--border-color); animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .help-header { margin-bottom: 25px; }
-        .help-header h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 20px; display: flex; align-items: center; gap: 8px; }
-        .help-header p { margin: 0; color: var(--text-muted); line-height: 1.5; font-size: 15px; }
+        .help-header { margin-bottom: 20px; }
+        .help-header p { margin: 0; color: var(--text-main); line-height: 1.5; font-size: 15px; }
 
-        .help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .help-grid { display: grid; gap: 20px; }
+        @media (min-width: 1024px) { .help-grid { grid-template-columns: repeat(4, 1fr); } }
         
         .help-card { background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
         .help-card:hover { transform: translateY(-3px); box-shadow: var(--card-hover-shadow); }
-        .help-card h4 { margin: 0 0 15px 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
-        .help-card ul { margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.7; }
-        .help-card li { margin-bottom: 8px; }
-        .help-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-top: 0; }
+        .help-card h4 { margin: 0 0 15px 0; font-size: 15px; display: flex; align-items: center; gap: 8px; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; font-weight: 600; }
         
-        /* Badges de Estatus */
+        .custom-list { margin: 0; padding-left: 20px; color: var(--text-main); font-size: 14px; line-height: 1.6; }
+        .custom-list li { margin-bottom: 10px; }
+        
+        .text-orange { color: var(--text-color-orange); font-weight: 600; }
+        .text-blue { color: var(--text-color-blue); font-weight: 600; }
+        
+        /* =========================================
+           FILTROS MAESTROS
+           ========================================= */
+        .filters-panel { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px; padding: 20px; box-shadow: var(--card-shadow); }
+        .filters-panel h3 { margin: 0 0 20px 0; font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        .filter-group select, .filter-group input { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; background: var(--bg-body); color: var(--text-main); outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; box-sizing: border-box; }
+        .filter-group select:focus, .filter-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 89, 0, 0.15); }
+        
+        .date-range-group { display: flex; gap: 10px; }
+        .date-range-group .date-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+        .btn-limpiar { margin-top: 20px; padding: 8px 16px; background-color: var(--bg-gray); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s, color 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-limpiar:hover { background-color: var(--border-color); color: var(--text-main); }
+
+        /* =========================================
+           BADGES
+           ========================================= */
         .status-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; width: fit-content; }
+        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; width: fit-content; }
         
         .badge-blue { background: var(--bg-blue); color: var(--text-blue); border: 1px solid var(--border-blue); }
         .badge-yellow { background: var(--bg-yellow); color: var(--text-yellow); border: 1px solid var(--border-yellow); }
         .badge-red { background: var(--bg-red); color: var(--text-red); border: 1px solid var(--border-red); }
         .badge-green { background: var(--bg-green); color: var(--text-green); border: 1px solid var(--border-green); }
         .badge-orange { background: var(--bg-orange); color: var(--text-orange); border: 1px solid var(--border-orange); }
-
-        .badge-desc { font-size: 13px; color: var(--text-muted); margin-left: 5px; display: block; margin-top: 2px; }
+        .badge-gray { background: var(--bg-gray); color: var(--text-gray); border: 1px solid var(--border-gray); }
+        .badge-desc { font-size: 13px; color: var(--text-muted); margin-left: 5px; display: block; margin-top: 4px; line-height: 1.4; }
 
         /* =========================================
-           TABLA Y MODAL (Mantenido y adaptado a colores)
+           TABLA ESTILO DASHBOARD
            ========================================= */
-        table { width: 100%; border-collapse: collapse; background: var(--bg-panel); box-shadow: var(--card-shadow); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 14px 12px; border-bottom: 1px solid var(--border-color); text-align: center; font-size: 14px; color: var(--text-main); }
-        th { background-color: rgba(0,0,0,0.03); font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s;}
-        th:hover { background-color: rgba(0,0,0,0.06); }
-        th.sort-asc::after { content: " ▲"; font-size: 10px; }
-        th.sort-desc::after { content: " ▼"; font-size: 10px; }
-        tbody tr:hover { background-color: rgba(0,123,255,0.03); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; background: transparent; }
+        th { padding: 14px 12px; border-bottom: 2px solid var(--border-color); text-align: left; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--bg-panel); font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s;}
+        th:hover { background-color: rgba(255, 89, 0, 0.03); }
+        th.sort-asc::after { content: " ▲"; font-size: 10px; color: var(--primary); }
+        th.sort-desc::after { content: " ▼"; font-size: 10px; color: var(--primary); }
         
-        td.align-left { text-align: left; }
-        a { color: var(--primary); text-decoration: none; font-weight: 500; }
+        td { padding: 18px 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 14px; color: var(--text-main); background: var(--bg-panel); vertical-align: middle; }
+        table { border-radius: 10px; overflow: hidden; box-shadow: var(--card-shadow); border: 1px solid var(--border-color); }
+        
+        tbody tr { transition: background-color 0.2s ease-in-out; }
+        tbody tr:hover td { background-color: rgba(255, 89, 0, 0.02); }
+        
+        .activity-name-col { font-weight: 600; font-size: 15px; }
+        .date-col { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+        .module-text { font-size: 13px; font-weight: 500; color: var(--text-muted); display: block; margin-top: 4px; }
+        
+        a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
         a:hover { text-decoration: underline; color: var(--primary-hover); }
         
-        .btn-link { display: inline-block; padding: 6px 12px; background-color: var(--bg-body); border-radius: 6px; color: var(--primary); border: 1px solid var(--border-color); cursor: pointer; text-decoration: none; font-size: 13px; transition: all 0.2s; }
-        .btn-link:hover { background-color: var(--border-color); }
-        
-        /* Badges en la tabla */
-        .forum-badge-table { display: block; margin: 6px auto 0 auto; font-size: 11px; }
+        .btn-link { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 14px; background-color: var(--bg-body); border-radius: 6px; color: var(--primary); border: 1px solid var(--border-color); cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .btn-link:hover { background-color: var(--border-color); transform: translateY(-1px); }
+        .forum-badge-table { display: block; margin: 8px 0 0 0; font-size: 11px; }
 
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
-        .modal-content { background-color: var(--bg-panel); margin: 8% auto; padding: 30px; border: 1px solid var(--border-color); width: 400px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); color: var(--text-main); }
-        .close-btn { color: var(--text-muted); float: right; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
-        .close-btn:hover { color: var(--text-main); }
-        .btn-correo { background-color: #dc2626; color: white; border: none; }
-        .btn-correo:hover { background-color: #b91c1c; color: white; }
+        /* =========================================
+           MODAL
+           ========================================= */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .modal-content { background-color: var(--bg-panel); margin: 8% auto; padding: 30px; border: 1px solid var(--border-color); width: 420px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); color: var(--text-main); }
+        .close-btn { color: var(--text-muted); float: right; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; transition: color 0.2s; }
+        .close-btn:hover { color: var(--primary); }
+        
+        /* Botón de correo adaptado a la paleta pero manteniendo urgencia */
+        .btn-correo { background-color: #ef4444; color: white; border: none; }
+        .btn-correo:hover { background-color: #dc2626; color: white; border: none; }
     </style>
 </head>
 <body>
 
-    <div class="test-panel">
-        <b>🛠️ Panel LTI:</b>
-        <label for="roleSelector">Rol:</label>
-        <select id="roleSelector" onchange="toggleUserIdInput()">
-            <option value="teacher" <%= role === 'teacher' ? 'selected' : '' %>>Maestro</option>
-            <option value="student" <%= role === 'student' ? 'selected' : '' %>>Alumno</option>
-        </select>
-        
-        <input type="text" id="userIdInput" placeholder="ID del Alumno (ej. 1067)" value="<%= (role !== 'teacher' && user_id !== 'NO_APLICA') ? user_id : '' %>" style="display: <%= role === 'teacher' ? 'none' : 'inline-block' %>;">
-        <button onclick="cambiarVistaPrueba()">🔄 Actualizar Vista</button>
-    </div>
-
-    <div class="header-info">
-        <b>Rol actual:</b> <%= role === 'teacher' ? '👨‍🏫 Maestro' : '🎓 Alumno' %> | 
-        <% if (role !== 'teacher') { %> <b>Canvas ID:</b> <%= user_id %> | <% } %>
-        <b>Nombre:</b> <%= userNameToDisplay %>
-    </div>
-
     <details class="modern-accordion">
         <summary>
             <span class="icon">📖</span> 
-            <span>Instrucciones y Guía de Uso de la Plataforma</span>
+            <span>Guía de uso</span>
         </summary>
         <div class="accordion-content">
-            
-            <% if (role === 'teacher') { %>
-                <div class="help-header">
-                    <h3>👨‍🏫 Instrucciones para MAESTROS</h3>
-                    <p>Este apartado permite consultar todas las actividades de la materia, incluyendo: <b>Tareas individuales, Tareas en equipo, Foros y Exámenes.</b></p>
+            <div class="help-header">
+                <p style="font-size: 15px; margin-bottom: 20px;">Este apartado te permite consultar todas las <b>actividades de tu materia</b>, incluyendo <b>tareas</b> individuales y en equipo, <b>foros</b> y <b>exámenes</b>.</p>
+            </div>
+            <div class="help-grid">
+                <div class="help-card">
+                    <h4>📌 ¿Qué puedes hacer aquí?</h4>
+                    <ul class="custom-list">
+                        <li>Conocer la <b>modalidad de trabajo</b>.</li>
+                        <li>Comunicarte con tu <b>equipo de trabajo</b>.</li>
+                        <li>Consultar las <b>fechas</b> importantes.</li>
+                        <li>Consultar el <b>estatus</b> de tus actividades.</li>
+                    </ul>
                 </div>
-
-                <div class="help-grid">
-                    <div class="help-card">
-                        <h4>📌 ¿Qué puedes hacer aquí?</h4>
-                        <ul>
-                            <li>Identificar el módulo al que pertenece la actividad.</li>
-                            <li>Consultar fechas importantes de entrega y disponibilidad.</li>
-                            <li>Ver la modalidad de trabajo (Individual o Equipo).</li>
-                            <li>Revisar el avance general de entregas del grupo.</li>
-                            <li>Consultar el número de revisiones realizadas.</li>
-                            <li>Acceder directamente a <i>SpeedGrader</i> para calificar.</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-card">
-                        <h4>📅 Fechas y su significado</h4>
-                        <ul>
-                            <li><b>Disponible desde:</b> Fecha en que la actividad se publica para los estudiantes.</li>
-                            <li><b>Fecha de entrega:</b> Fecha límite oficial de entrega estipulada.</li>
-                            <li><b>Hasta:</b> Fecha final permitida para entregar en el sistema. (Puede representar una prórroga).</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-card">
-                        <h4>🤝 Modalidad y Equipos</h4>
-                        <ul>
-                            <li><b>👤 Individual:</b> Cada estudiante entrega de manera personal.</li>
-                            <li><b>👥 Equipo:</b> La entrega se realiza por equipo.</li>
-                        </ul>
-                        <p style="margin-top: 10px;"><b>Desde la modalidad de equipos puedes:</b></p>
-                        <ul>
-                            <li>Acceder al apartado general de grupos.</li>
-                            <li>Consultar o editar la conformación de los equipos.</li>
-                            <li>Entrar al espacio colaborativo de cada equipo.</li>
-                        </ul>
-                    </div>
-
-                    <div class="help-card">
-                        <h4>📊 Seguimiento de entregas</h4>
-                        <ul>
-                            <li><b>Entregas:</b> Cantidad de trabajos recibidos respecto al total de alumnos esperados.</li>
-                            <li><b>Revisadas:</b> Cantidad de actividades que ya han sido evaluadas.</li>
-                            <li><b>Revisión:</b> Acceso directo a la herramienta <i>SpeedGrader</i> mediante el botón “Calificar” en la tabla.</li>
-                        </ul>
-                    </div>
+                <div class="help-card">
+                    <h4>🗓️ Fechas y su significado</h4>
+                    <ul class="custom-list">
+                        <li><span class="text-orange">Disponible desde:</span> Es la <b>fecha de publicación</b> de la actividad y se vuelve visible para ti.</li>
+                        <li><span class="text-orange">Fecha de entrega:</span> Es la <b>fecha límite</b> oficial para entregar la actividad.</li>
+                        <li><span class="text-orange">Hasta:</span> Es la <b>fecha final</b> en la que aún puedes entregar. Puede coincidir con la <b>fecha de entrega</b> o reflejar una <b>prórroga</b> otorgada por tu profesor.</li>
+                    </ul>
                 </div>
-
-            <% } else { %>
-                <div class="help-header">
-                    <h3>🎓 Instrucciones para ALUMNOS</h3>
-                    <p>Este apartado te permite consultar todas las actividades de tu materia, incluyendo: <b>Tareas individuales, Tareas en equipo, Foros y Exámenes.</b></p>
+                <div class="help-card">
+                    <h4>👩‍🏫 Modalidad de entrega</h4>
+                    <ul class="custom-list">
+                        <li>👤 <span class="text-blue">Individual:</span> la entrega es <b>personal</b>.</li>
+                        <li>👥 <span class="text-blue">Grupo:</span> la entrega se realiza en equipo.<br>Al dar clic podrás ver:
+                            <ul style="list-style-type: circle; margin-top: 5px; margin-bottom: 0;">
+                                <li><b>Integrantes</b> de tu grupo (equipo).</li>
+                                <li>Acceso directo "<b>Colabora con tu grupo</b>", un espacio en CANVAS para comunicarte y compartir información.</li>
+                                <li>Botón para <b>Enviar correo</b> a tus compañeros.</li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
-
-                <div class="help-grid">
-                    <div class="help-card">
-                        <h4>📌 ¿Qué puedes hacer aquí?</h4>
-                        <ul>
-                            <li>Identificar el módulo al que pertenece cada actividad.</li>
-                            <li>Consultar las fechas importantes y límites.</li>
-                            <li>Ver la modalidad de trabajo para cada entrega.</li>
-                            <li>Acceder directamente al espacio colaborativo de tu equipo.</li>
-                            <li>Consultar el estatus actualizado de tu entrega.</li>
-                        </ul>
+                <div class="help-card">
+                    <h4>📝 Estatus para tareas y exámenes</h4>
+                    <div class="status-list" style="margin-bottom: 25px;">
+                        <div><span class="badge badge-blue">🔵 Entregada</span></div>
+                        <div><span class="badge badge-yellow">🟡 Entrega con atraso</span></div>
+                        <div><span class="badge badge-red">🔴 No entregada</span></div>
+                        <div><span class="badge badge-green">🟢 Calificada</span></div>
                     </div>
-
-                    <div class="help-card">
-                        <h4>📅 Fechas y su significado</h4>
-                        <ul>
-                            <li><b>Disponible desde:</b> Fecha en que la actividad se publica y aparece visible para ti.</li>
-                            <li><b>Fecha de entrega:</b> Fecha límite oficial para entregar a tiempo.</li>
-                            <li><b>Hasta:</b> Fecha final permitida para entregar; puede incluir prórrogas otorgadas por el profesor.</li>
-                        </ul>
-                        
-                        <h4 style="margin-top: 20px;">🤝 Modalidad y Equipos</h4>
-                        <ul>
-                            <li><b>👤 Individual:</b> La entrega es personal.</li>
-                            <li><b>👥 Equipo:</b> La actividad se realiza en colaboración con compañeros.</li>
-                        </ul>
-                        <p style="margin-top: 10px;"><b>Opciones de equipo:</b> Puedes consultar el nombre e integrantes, o hacer clic en "Visitar" para ingresar a tu espacio colaborativo.</p>
-                    </div>
-
-                    <div class="help-card">
-                        <h4>📝 Estatus de entrega</h4>
-                        <div class="status-list">
-                            <div><span class="badge badge-blue">🔵 Entregada</span></div>
-                            <div><span class="badge badge-yellow">🟡 Entrega con atraso</span></div>
-                            <div><span class="badge badge-red">🔴 No entregada</span></div>
-                            <div><span class="badge badge-green">🟢 Calificada</span></div>
+                    <h4>🗣️ Estatus para foros</h4>
+                    <div class="status-list">
+                        <div>
+                            <span class="badge badge-orange">🟠 Aportación inicial</span>
+                            <span class="badge-desc">Ya publicaste tu aportación, pero falta retroalimentar.</span>
                         </div>
-                    </div>
-
-                    <div class="help-card">
-                        <h4>🗣️ Estatus específicos para Foros</h4>
-                        <div class="status-list">
-                            <div>
-                                <span class="badge badge-orange">🟠 Aportación inicial</span>
-                                <span class="badge-desc">Ya publicaste tu aportación, pero falta retroalimentar.</span>
-                            </div>
-                            <div style="margin-top: 5px;">
-                                <span class="badge badge-orange">🟠 Retroalimentación</span>
-                                <span class="badge-desc">Ya retroalimentaste a compañeros, pero falta tu aportación inicial.</span>
-                            </div>
-                            <div style="margin-top: 5px;">
-                                <span class="badge badge-blue">🔵 Entregada</span>
-                                <span class="badge-desc">Ambas participaciones (aportación y retroalimentación) completadas.</span>
-                            </div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-orange">🟠 Retroalimentación</span>
+                            <span class="badge-desc">Ya retroalimentaste a compañeros, pero falta tu aportación inicial.</span>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-blue">🔵 Entregada</span>
+                            <span class="badge-desc">Ambas participaciones (aportación y retroalimentación) completadas.</span>
                         </div>
                     </div>
                 </div>
-            <% } %>
-
+            </div>
         </div>
     </details>
+
+    <% if (role === 'teacher') { %>
+        <div class="filters-panel" id="filtrosMaestro">
+            <h3>🔍 Filtros de Búsqueda</h3>
+            <div class="filters-grid">
+                
+                <div class="filter-group">
+                    <label>Buscar por tipo</label>
+                    <select class="filter-input" data-filter="tipo">
+                        <option value="">Todos</option>
+                        <option value="Tarea">Tarea</option>
+                        <option value="Foro de discusión">Foro de discusión</option>
+                        <option value="Examen">Examen</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar por modalidad de trabajo</label>
+                    <select class="filter-input" data-filter="modalidad">
+                        <option value="">Todas</option>
+                        <option value="Individual">Individual</option>
+                        <option value="Equipo">Equipo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar por avance de entrega</label>
+                    <select class="filter-input" data-filter="entrega">
+                        <option value="">Todos</option>
+                        <option value="pendientes">Con entregas pendientes</option>
+                        <option value="completas">Con entregas completas</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar por avance de revisión</label>
+                    <select class="filter-input" data-filter="revision">
+                        <option value="">Todos</option>
+                        <option value="pendientes">Con revisiones pendientes</option>
+                        <option value="completas">Con revisiones completas</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar por módulo</label>
+                    <select class="filter-input" id="filtroModulo" data-filter="modulo">
+                        <option value="">Todos los módulos</option>
+                        </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar por periodo</label>
+                    <select class="filter-input" data-filter="periodo">
+                        <option value="">Todos</option>
+                        <option value="Parcial 1">Parcial 1</option>
+                        <option value="Parcial 2">Parcial 2</option>
+                        <option value="Ordinario">Ordinario</option>
+                    </select>
+                </div>
+
+                <div class="date-range-group">
+                    <div class="date-col">
+                        <label>Inicio:</label>
+                        <input type="date" class="filter-input" data-filter="fecha_inicio">
+                    </div>
+                    <div class="date-col">
+                        <label>Fin:</label>
+                        <input type="date" class="filter-input" data-filter="fecha_fin">
+                    </div>
+                </div>
+
+            </div>
+            <button class="btn-limpiar" id="btnLimpiarFiltros">✖ Limpiar Filtros</button>
+        </div>
+    <% } %>
 
     <table id="actividadesTable">
         <thead>
             <% if (role === 'teacher') { %>
                 <tr>
-                    <th data-type="string">Actividades</th>
+                    <th data-type="string">Actividad y Módulo</th>
                     <th data-type="string">Tipo</th>
-                    <th data-type="string">Módulo</th>
                     <th data-type="date">Disponible desde</th>
                     <th data-type="date">Entrega</th>
                     <th data-type="date">Hasta</th>
                     <th data-type="string">Modalidad</th>
-                    <th data-type="number">Entregas</th>
-                    <th data-type="number">Revisadas</th>
-                    <th>Revisión</th>
+                    <th data-type="number" style="text-align: center;">Entregas</th>
+                    <th data-type="number" style="text-align: center;">Revisadas</th>
+                    <th style="text-align: center;">Revisión</th>
                 </tr>
             <% } else { %>
                 <tr>
-                    <th data-type="string">Actividades</th>
+                    <th data-type="string">Actividad y Módulo</th>
                     <th data-type="string">Tipo</th>
-                    <th data-type="string">Módulo</th>
                     <th data-type="date">Disponible desde</th>
                     <th data-type="date">Entrega</th>
                     <th data-type="date">Hasta</th>
@@ -296,30 +338,46 @@
         </thead>
         <tbody>
             <% tableData.forEach(row => { %>
-                <tr>
-                    <td class="align-left" data-value="<%= row.name %>"><a href="<%= row.url %>" target="_blank"><%= row.name %></a></td>
-                    <td data-value="<%= row.activity_type %>"><%= row.activity_type === 'Foro de discusión' ? '🗣️ Foro de discusión' : row.activity_type %></td>
-                    <td data-value="<%= row.module_name %>"><%= row.module_name %></td>
-                    <td data-value="<%= row.raw_available %>"><%= row.available_from %></td>
-                    <td data-value="<%= row.raw_due %>"><%= row.due_date %></td>
-                    <td data-value="<%= row.raw_lock %>"><%= row.lock_date %></td>
+                <tr class="activity-row">
+                    <td data-value="<%= row.name %>" class="activity-name-col">
+                        <a href="<%= row.url %>" target="_blank"><%= row.name %></a>
+                        <span class="module-text">📁 <%= row.module_name %></span>
+                    </td>
+                    
+                    <td data-value="<%= row.activity_type %>">
+                        <% if(row.activity_type === 'Foro de discusión') { %>
+                            <span class="badge badge-orange">🗣️ Foro</span>
+                        <% } else if(row.activity_type === 'Examen') { %>
+                            <span class="badge badge-gray">📝 Examen</span>
+                        <% } else { %>
+                            <span class="badge badge-gray">📄 Tarea</span>
+                        <% } %>
+                    </td>
+                    
+                    <td data-value="<%= row.raw_available %>" class="date-col"><%= row.available_from %></td>
+                    <td data-value="<%= row.raw_due %>" class="date-col"><%= row.due_date %></td>
+                    <td data-value="<%= row.raw_lock %>" class="date-col"><%= row.lock_date %></td>
                     
                     <td data-value="<%= row.is_group ? 'Equipo' : 'Individual' %>">
                         <% if (role !== 'teacher' && row.is_group) { %>
                             <% if (row.group_id) { %>
-                                <button class="btn-link" onclick="abrirModalEquipo(this)" data-name="<%= row.group_name %>" data-id="<%= row.group_id %>" data-members="<%= encodeURIComponent(JSON.stringify(row.group_members)) %>">👥 Equipo</button>
+                                <button class="btn-link" onclick="abrirModalEquipo(this)" data-name="<%= row.group_name %>" data-id="<%= row.group_id %>" data-members="<%= encodeURIComponent(JSON.stringify(row.group_members)) %>">
+                                    👥 Ver Equipo
+                                </button>
                             <% } else { %>
-                                👥 <span style="color: var(--text-muted); font-size: 12px;">Sin equipo</span>
+                                <span style="color: var(--text-muted); font-size: 13px; font-weight: 500;">👥 Sin equipo</span>
                             <% } %>
                         <% } else { %>
-                            <%= row.is_group ? '👥 Equipo' : '👤 Individual' %>
+                            <span style="font-weight: 500; color: var(--text-muted);">
+                                <%= row.is_group ? '👥 Equipo' : '👤 Individual' %>
+                            </span>
                         <% } %>
                     </td>
 
                     <% if (role === 'teacher') { %>
-                        <td data-value="<%= row.entregas.split('/')[0] || 0 %>"><%= row.entregas %></td>
-                        <td data-value="<%= row.revisadas %>"><%= row.revisadas %></td>
-                        <td><a href="<%= row.speedgrader_url %>" target="_blank" class="btn-link">📝 Calificar</a></td>
+                        <td data-value="<%= row.entregas.split('/')[0] || 0 %>" style="text-align: center; font-weight: 600;" class="td-entregas"><%= row.entregas %></td>
+                        <td data-value="<%= row.revisadas %>" style="text-align: center; font-weight: 600;" class="td-revisadas"><%= row.revisadas %></td>
+                        <td style="text-align: center;"><a href="<%= row.speedgrader_url %>" target="_blank" class="btn-link">📝 Calificar</a></td>
                     <% } else { %>
                         <td data-value="<%= row.status %>">
                             <% 
@@ -332,7 +390,7 @@
                             
                             <% if (row.forum_indicators && row.forum_indicators.length > 0) { %>
                                 <% row.forum_indicators.forEach(indicator => { %>
-                                    <span class="badge badge-orange forum-badge-table">🟠 <%= indicator %></span>
+                                    <span class="badge badge-orange forum-badge-table">✓ <%= indicator %></span>
                                 <% }) %>
                             <% } %>
                         </td>
@@ -342,48 +400,36 @@
             
             <% if (tableData.length === 0) { %>
                 <tr>
-                    <td colspan="<%= role === 'teacher' ? '10' : '8' %>" style="padding: 30px; color: var(--text-muted);">No hay actividades disponibles o publicadas en este momento.</td>
+                    <td colspan="<%= role === 'teacher' ? '9' : '7' %>" style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;">
+                        No hay actividades disponibles o publicadas en este momento.
+                    </td>
                 </tr>
             <% } %>
+            
+            <tr id="noResultsRow" style="display: none;">
+                <td colspan="<%= role === 'teacher' ? '9' : '7' %>" style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;">
+                    Ninguna actividad coincide con los filtros seleccionados.
+                </td>
+            </tr>
         </tbody>
     </table>
 
     <div id="modalEquipo" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="cerrarModal()">&times;</span>
-            <h3 id="modalGroupName" style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Tu Equipo</h3>
-            
+            <h3 id="modalGroupName" style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--primary);">Tu Equipo</h3>
             <div style="text-align: left; margin: 15px 0;">
                 <strong style="color: var(--text-muted); font-size: 13px; text-transform: uppercase;">Integrantes:</strong>
                 <ul id="modalMembersList" style="padding-left: 20px; font-size: 15px; margin-top: 10px; line-height: 1.6;"></ul>
             </div>
-            
             <div style="display: flex; justify-content: space-between; margin-top: 30px; gap: 10px;">
-                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">🌐 Visitar Espacio</a>
-                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">✉️ Correo Grupal</button>
+                <a id="btnIrGrupo" href="#" target="_blank" class="btn-link" style="flex: 1; text-align: center;">🌐 Colaborar con tu grupo</a>
+                <button id="btnEnviarCorreo" class="btn-link btn-correo" style="flex: 1; text-align: center;">✉️ Enviar correo</button>
             </div>
         </div>
     </div>
 
     <script>
-        function toggleUserIdInput() {
-            const role = document.getElementById('roleSelector').value;
-            document.getElementById('userIdInput').style.display = role === 'teacher' ? 'none' : 'inline-block';
-        }
-
-        function cambiarVistaPrueba() {
-            const role = document.getElementById('roleSelector').value;
-            const userId = document.getElementById('userIdInput').value;
-            const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('course_id') || '317';
-            
-            let nuevaUrl = `/?course_id=${courseId}&role=${role}`;
-            if (role === 'student' && userId.trim() !== '') {
-                nuevaUrl += `&user_id=${userId.trim()}`;
-            }
-            window.location.href = nuevaUrl;
-        }
-
         function abrirModalEquipo(btn) {
             const groupName = btn.getAttribute('data-name');
             const groupId = btn.getAttribute('data-id');
@@ -426,7 +472,7 @@
             if (event.target == modal) modal.style.display = "none";
         }
 
-        // --- ORDENAMIENTO NATIVO ---
+        // --- ORDENAMIENTO DE TABLA ---
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.getElementById('actividadesTable');
             const headers = table.querySelectorAll('th[data-type]');
@@ -436,8 +482,8 @@
             let currentSortAsc = true;
 
             const sortTable = (colIndex, type, asc) => {
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                if(rows.length === 1 && rows[0].cells.length === 1) return;
+                const rows = Array.from(tbody.querySelectorAll('tr.activity-row'));
+                if(rows.length === 0) return;
 
                 rows.sort((a, b) => {
                     let valA = a.cells[colIndex].getAttribute('data-value') || '';
@@ -452,8 +498,7 @@
                     }
                 });
 
-                tbody.innerHTML = '';
-                rows.forEach(row => tbody.appendChild(row));
+                rows.forEach(row => tbody.insertBefore(row, document.getElementById('noResultsRow')));
                 
                 headers.forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
                 headers[colIndex].classList.add(asc ? 'sort-asc' : 'sort-desc');
@@ -472,11 +517,94 @@
                 });
             });
 
-            // ORDEN DEFAULT POR FECHA DE ENTREGA (Columna 4)
-            if(headers.length > 4) {
-                currentSortCol = 4;
+            if(headers.length > 3) {
+                currentSortCol = 3;
                 currentSortAsc = true;
-                sortTable(4, 'date', true);
+                sortTable(3, 'date', true);
+            }
+
+            // ==========================================
+            // LÓGICA DE FILTROS PARA EL MAESTRO
+            // ==========================================
+            const isTeacher = document.getElementById('filtrosMaestro');
+            if (isTeacher) {
+                const moduloSelect = document.getElementById('filtroModulo');
+                const modulosUnicos = new Set();
+                document.querySelectorAll('.module-text').forEach(el => {
+                    const modName = el.textContent.replace('📁 ', '').trim();
+                    if (modName && modName !== 'Sin módulo') modulosUnicos.add(modName);
+                });
+                
+                [...modulosUnicos].sort().forEach(mod => {
+                    const opt = document.createElement('option');
+                    opt.value = mod;
+                    opt.textContent = mod;
+                    moduloSelect.appendChild(opt);
+                });
+
+                const filterInputs = document.querySelectorAll('.filter-input');
+                const rows = document.querySelectorAll('tr.activity-row');
+                const noResultsRow = document.getElementById('noResultsRow');
+
+                const applyFilters = () => {
+                    const filters = {};
+                    filterInputs.forEach(input => {
+                        filters[input.getAttribute('data-filter')] = input.value;
+                    });
+
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+                        let show = true;
+                        
+                        const nombreActividad = row.cells[0].getAttribute('data-value').toLowerCase();
+                        const modulo = row.cells[0].querySelector('.module-text').textContent.replace('📁 ', '').trim();
+                        const tipo = row.cells[1].getAttribute('data-value');
+                        const fechaRaw = row.cells[3].getAttribute('data-value'); 
+                        const modalidad = row.cells[5].getAttribute('data-value');
+                        
+                        const entregasStr = row.querySelector('.td-entregas').textContent;
+                        let entregadas = 0, esperadas = 0;
+                        if(entregasStr.includes('/')) {
+                            [entregadas, esperadas] = entregasStr.split('/').map(Number);
+                        }
+                        
+                        const revisadas = parseInt(row.querySelector('.td-revisadas').textContent) || 0;
+
+                        if (filters.tipo && tipo !== filters.tipo) show = false;
+                        if (filters.modalidad && modalidad !== filters.modalidad) show = false;
+                        if (filters.modulo && modulo !== filters.modulo) show = false;
+                        if (filters.periodo && !nombreActividad.includes(filters.periodo.toLowerCase())) show = false;
+                        
+                        if (filters.entrega === 'pendientes' && (entregadas >= esperadas || esperadas === 0)) show = false;
+                        if (filters.entrega === 'completas' && (entregadas < esperadas || esperadas === 0)) show = false;
+
+                        if (filters.revision === 'pendientes' && (revisadas >= entregadas || entregadas === 0)) show = false;
+                        if (filters.revision === 'completas' && (revisadas < entregadas || entregadas === 0)) show = false;
+
+                        if (filters.fecha_inicio || filters.fecha_fin) {
+                            if (fechaRaw && fechaRaw !== '9999-12-31T23:59:59Z') {
+                                const rowDate = fechaRaw.split('T')[0];
+                                if (filters.fecha_inicio && rowDate < filters.fecha_inicio) show = false;
+                                if (filters.fecha_fin && rowDate > filters.fecha_fin) show = false;
+                            } else {
+                                show = false; 
+                            }
+                        }
+
+                        row.style.display = show ? '' : 'none';
+                        if (show) visibleCount++;
+                    });
+
+                    noResultsRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+                };
+
+                filterInputs.forEach(input => input.addEventListener('change', applyFilters));
+
+                document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
+                    filterInputs.forEach(input => input.value = '');
+                    applyFilters();
+                });
             }
         });
     </script>
