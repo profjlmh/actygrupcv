@@ -30,29 +30,30 @@ lti.setup(
 
 lti.whitelist('/', '/api/get-groups');
 
+// ... dentro de lti.onConnect
 lti.onConnect(async (token, req, res) => {
   const { platformContext } = token;
   const custom = platformContext.custom || {};
   
   const courseId = custom.canvas_course_id || platformContext.context.id;
   const userId = custom.canvas_user_id || token.user; 
-  const sisId = custom.canvas_user_sis_id || 'Sin SIS'; 
   
-  // AQUÍ ESTÁ EL CAMBIO: Revisamos estrictamente los roles LTI
-  const roles = platformContext.roles || [];
-  
-  // Un usuario es maestro SOLO si tiene explícitamente Instructor o Administrator
-  const isTeacher = roles.some(role => 
-    role.toLowerCase().includes('instructor') || 
-    role.toLowerCase().includes('administrator') ||
-    role.toLowerCase().includes('admin')
-  );
-  
-  const userRole = isTeacher ? 'teacher' : 'student';
+  // Vamos a verificar el rol en el curso específico usando la API
+  let userRole = 'student'; // Default
+  try {
+      const memberRes = await axios.get(`${process.env.PLATFORM_URL}/api/v1/courses/${courseId}/users/${userId}?enrollment_type[]=teacher&enrollment_type[]=ta&enrollment_type[]=student`, {
+          headers: { 'Authorization': `Bearer ${process.env.CANVAS_TOKEN}` }
+      });
+      
+      const enrollments = memberRes.data.enrollments;
+      // Si el usuario tiene alguna inscripción como 'teacher' o 'ta' en este curso, es maestro
+      const isTeacher = enrollments.some(e => e.type === 'TeacherEnrollment' || e.type === 'TaEnrollment');
+      userRole = isTeacher ? 'teacher' : 'student';
+  } catch (e) {
+      console.error("Error al validar rol en curso:", e.message);
+  }
 
-  console.log(`DEBUG: Usuario ${userId} identificado como ${userRole} con roles:`, roles);
-
-  return res.redirect(`/?course_id=${courseId}&role=${userRole}&user_id=${userId}&sis_id=${sisId}`);
+  return res.redirect(`/?course_id=${courseId}&role=${userRole}&user_id=${userId}`);
 });
 
 const web = express();
