@@ -38,9 +38,19 @@ lti.onConnect(async (token, req, res) => {
   const userId = custom.canvas_user_id || token.user; 
   const sisId = custom.canvas_user_sis_id || 'Sin SIS'; 
   
+  // AQUÍ ESTÁ EL CAMBIO: Revisamos estrictamente los roles LTI
   const roles = platformContext.roles || [];
-  const isTeacher = roles.some(role => role.includes('Instructor') || role.includes('Administrator'));
+  
+  // Un usuario es maestro SOLO si tiene explícitamente Instructor o Administrator
+  const isTeacher = roles.some(role => 
+    role.toLowerCase().includes('instructor') || 
+    role.toLowerCase().includes('administrator') ||
+    role.toLowerCase().includes('admin')
+  );
+  
   const userRole = isTeacher ? 'teacher' : 'student';
+
+  console.log(`DEBUG: Usuario ${userId} identificado como ${userRole} con roles:`, roles);
 
   return res.redirect(`/?course_id=${courseId}&role=${userRole}&user_id=${userId}&sis_id=${sisId}`);
 });
